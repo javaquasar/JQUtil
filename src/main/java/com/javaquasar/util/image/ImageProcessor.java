@@ -1,4 +1,4 @@
-package com.javaquasar.util;
+package com.javaquasar.util.image;
 
 import java.util.Base64;
 
@@ -15,6 +15,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.charset.Charset;
@@ -33,6 +35,7 @@ import static org.imgscalr.Scalr.Method;
 import static org.imgscalr.Scalr.OP_ANTIALIAS;
 
 import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 /**
  *
@@ -48,9 +51,14 @@ public class ImageProcessor {
     private static final int MARGIN = 4;
     private static final String IMAGE_EXTENSION = "PNG";
 
-
     public static final int SMALL_SIZE = 128;
     public static final int MEDIUM_SIZE = 256;
+
+    public static void saveBytesToFile(String filePath, byte[] fileBytes) throws FileNotFoundException, IOException {
+        try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
+            outputStream.write(fileBytes);
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         File clientQrFolder = new File("/home/artur/Desktop/" + 2020 + new Date().getTime());
@@ -89,7 +97,7 @@ public class ImageProcessor {
         }
         return base64QrCode;
     }
-    
+
     public static boolean createQrImage(String textQr, String pathToFile) {
         try {
             String base64QrCode = getBase64QrCode(textQr);
@@ -108,7 +116,6 @@ public class ImageProcessor {
         int scaledHeight = (int) (bufferedImage.getHeight() * percent);
         return Scalr.resize(bufferedImage, Method.ULTRA_QUALITY, scaledWidth, scaledHeight, OP_ANTIALIAS);
     }
-  
 
     /**
      *
@@ -166,6 +173,32 @@ public class ImageProcessor {
         return DatatypeConverter.printBase64Binary(baos.toByteArray());
     }
 
+    public static String imageToString(BufferedImage image, String type) {
+        String imageString = null;
+
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();) {
+            ImageIO.write(image, type, bos);
+            byte[] imageBytes = bos.toByteArray();
+            BASE64Encoder encoder = new BASE64Encoder();
+            imageString = encoder.encode(imageBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageString;
+    }
+
+    public static String encodeToBase64String(String source) {
+        return isEmptyString(source) ? null
+                : Base64.getEncoder().encodeToString(source.getBytes(Charset.forName("UTF-8")));
+    }
+
+    public static String decodeFromBase64String(String base64String) {
+        return isEmptyString(base64String) ? null
+                : new String(Base64.getDecoder().decode(base64String), Charset.forName("UTF-8"));
+    }
+
+    public static boolean isEmptyString(Object str) {
+        return ((str == null) || str.toString().trim().isEmpty());
+    }
 
 }
-

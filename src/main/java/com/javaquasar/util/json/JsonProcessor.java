@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
@@ -35,6 +36,15 @@ public class JsonProcessor {
                 Writer writer = new OutputStreamWriter(fos, "UTF-8")) {
             Gson gson = new GsonBuilder().create();
             gson.toJson(json, writer);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static void writeObjectToFile(String path, Object o) {
+        try(FileWriter fw = new FileWriter(path)) {
+            Gson gson = new Gson();
+            gson.toJson(o, fw);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

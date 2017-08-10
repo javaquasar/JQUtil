@@ -41,39 +41,43 @@ public class EMailManager {
         Authenticator authenticator = new SMTPAuthenticator(login, password);
         session = Session.getDefaultInstance(smtpProperties, authenticator);
     }
-    
-    public void sendEMail(String sender, String receiver, String subject, String contentType, String messageBody) throws MessagingException, IOException {
+
+    private MimeMessage getMimeMessage(String sender, String recipient, String subject) {
+        MimeMessage msg = null;
         try {
-            MimeMessage msg = new MimeMessage(session);
+            msg = new MimeMessage(session);
             msg.setFrom(new InternetAddress(sender));
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiver, false));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient, false));
             msg.setSubject(subject);
             msg.setSentDate(new Date());
             msg.addHeader("X-Mailer", "DiPocket Mailer");
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+        return msg;
+    }
+
+    //recipientsList
+    public void sendEMail(String sender, String recipient, String subject, String contentType, String messageBody) throws MessagingException, IOException {
+        try {
+            MimeMessage msg = getMimeMessage(sender, recipient, subject);
             msg.setDataHandler(new DataHandler(new ByteArrayDataSource(messageBody.getBytes(StandardCharsets.UTF_8), contentType)));
             Transport.send(msg);
-        } finally {
-
+        } catch (Exception e){
+            throw new RuntimeException(e);
         }
     }
 
     public void sendEMailWithMultipleAttachment(
             String sender,
-            String receiver,
+            String recipient,
             String subject,
             String contentType,
             String messageBody,
             List<String> attachments) 
             throws MessagingException, IOException {
         try {
-            MimeMessage msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(sender)); //TODO:
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiver, false));
-
-            msg.setSubject(subject);
-            msg.setSentDate(new Date());
-            msg.addHeader("X-Mailer", "DiPocket Mailer");
-
+            MimeMessage msg = getMimeMessage(sender, recipient, subject);
             Multipart multipart = new MimeMultipart();
 
             BodyPart messageBodyPart = new MimeBodyPart();
@@ -90,37 +94,31 @@ public class EMailManager {
             msg.setContent(multipart);
 
             Transport.send(msg);
-        } finally {
-
+        } catch (Exception e){
+            throw new RuntimeException(e);
         }
     }
 
     public void sendEMailWithAttachment(
             String sender, 
-            String receiver, 
+            String recipient,
             String subject, 
             String contentType,
             String messageBody, 
             String attachmentFileName) throws MessagingException, IOException {
-        sendEMailWithMultipleAttachment(sender, receiver, subject, contentType, messageBody, Arrays.asList(attachmentFileName));
+        sendEMailWithMultipleAttachment(sender, recipient, subject, contentType, messageBody, Arrays.asList(attachmentFileName));
     }
 
     public void sendEMailWithImageAttachment(
             String sender,
-            String receiver,
+            String recipient,
             String subject,
             String contentType /*"text/html"*/,
             String messageBody,
             Map<String, String> mapInlineImages,
             String attachmentImage) throws MessagingException, IOException {
         try {
-            MimeMessage msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(sender));
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiver, false));
-
-            msg.setSubject(subject);
-            msg.setSentDate(new Date());
-            msg.addHeader("X-Mailer", "DiPocket Mailer");
+            MimeMessage msg = getMimeMessage(sender, recipient, subject);
 
             BodyPart messageBodyPart = new MimeBodyPart();
             messageBodyPart.setDataHandler(new DataHandler(new ByteArrayDataSource(messageBody.getBytes(StandardCharsets.UTF_8), contentType)));
@@ -149,8 +147,8 @@ public class EMailManager {
 
             msg.setContent(multipart);
             Transport.send(msg);
-        } finally {
-
+        } catch (Exception e){
+            throw new RuntimeException(e);
         }
     }
 

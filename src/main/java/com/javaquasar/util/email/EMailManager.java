@@ -32,6 +32,7 @@ import javax.mail.util.ByteArrayDataSource;
 public class EMailManager {
        
     private Session session = null;
+    private Map<String, String> headers = null;
     
     public EMailManager(Properties smtpProperties) {
         session = Session.getDefaultInstance(smtpProperties);
@@ -41,6 +42,20 @@ public class EMailManager {
         Authenticator authenticator = new SMTPAuthenticator(login, password);
         session = Session.getDefaultInstance(smtpProperties, authenticator);
     }
+    
+    public EMailManager(Properties smtpProperties, String login, String password, Map<String, String> headers) {
+        Authenticator authenticator = new SMTPAuthenticator(login, password);
+        session = Session.getDefaultInstance(smtpProperties, authenticator);
+        this.headers = headers;
+    }
+
+    public Map<String, String> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
+    } 
 
     private MimeMessage getMimeMessage(String sender, String recipient, String subject) {
         MimeMessage msg = null;
@@ -50,7 +65,13 @@ public class EMailManager {
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient, false));
             msg.setSubject(subject);
             msg.setSentDate(new Date());
-            msg.addHeader("X-Mailer", "DiPocket Mailer");
+            
+            if(headers != null) {
+                for(Map.Entry<String, String> entry : headers.entrySet()) {
+                     msg.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
+           
         } catch (Exception e){
             throw new RuntimeException(e);
         }

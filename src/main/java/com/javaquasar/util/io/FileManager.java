@@ -114,6 +114,23 @@ public class FileManager {
     
     public static void copyFile(String source, String dest) throws IOException {
         copyFileUsingJava7Files(new File(source), new File(dest));
-    }   
+    }
+    
+    public static void purgeDirectory(String path) {
+        File file = new File(path);
+        if (file.exists() && file.isDirectory()) {
+            deleteFile(new File(path));
+        }
+    }
+
+    public static void deleteFile(File file) {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                deleteFile(f);
+            }
+        } else {
+            file.delete();
+        }
+    }
 
 }

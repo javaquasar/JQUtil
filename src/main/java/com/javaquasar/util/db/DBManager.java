@@ -29,7 +29,7 @@ public class DBManager {
         return dataList;
     }
 
-    private static List<List<String>> convertResultSetToList(ResultSet rs) throws SQLException {
+    public static List<List<String>> convertResultSetToList(ResultSet rs) throws SQLException {
         List<List<String>> dataList = new ArrayList<>();
         dataList.add(new ArrayList<>());
         ResultSetMetaData metaData = rs.getMetaData();
